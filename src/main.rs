@@ -6,7 +6,7 @@ use structopt::StructOpt;
 use url::Url;
 
 #[derive(Debug, StructOpt)]
-#[structopt(name = "hunter", about = "Read domains from csv and extra email data from hunter.io.")]
+#[structopt(name = "hunter", about = "Read domains from a csv and extract email data from hunter.io.")]
 struct Opt {
     /// CSV file to load domains from.
     #[structopt(parse(from_os_str))]
@@ -14,6 +14,9 @@ struct Opt {
     /// CSV file to write email to.
     #[structopt(parse(from_os_str))]
     output: PathBuf,
+    /// How many records to retreive. (If using a free plan, you must set to 10)
+    #[structopt(short, long, default_value="100")]
+    limit: usize,
 }
 
 #[derive(Debug, Deserialize)]
@@ -125,7 +128,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let domain: Domain = result?;
         println!("processing {}...", &domain.domain);
         let hunter_url = Url::parse_with_params("https://api.hunter.io/v2/domain-search",
-            &[("domain", &domain.domain), ("api_key", &api_key)])?;
+            &[("domain", &domain.domain), ("api_key", &api_key), ("limit", &opt.limit.to_string())])?;
         let response = reqwest::get(hunter_url).await;
         match response {
             Ok(r) => match r.json::<Hunter>().await {
