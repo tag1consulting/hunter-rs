@@ -25,6 +25,14 @@ struct Domain {
 #[derive(Debug, Deserialize, Serialize)]
 struct Hunter {
     data: Data,
+    meta: Meta,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct Meta {
+    results: usize,
+    limit: usize,
+    offset: usize,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -122,6 +130,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         match response {
             Ok(r) => match r.json::<Hunter>().await {
                 Ok(hunter) => {
+                    println!("{:?}", hunter.meta);
                     let domain = hunter.data.domain.to_string();
                     let disposable = hunter.data.disposable;
                     let webmail = hunter.data.webmail;
